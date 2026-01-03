@@ -1,73 +1,93 @@
 {
-    "name": "stalker-2-navigator",
-    "displayName": "S.T.A.L.K.E.R. 2 Navigator",
-    "description": "VS Code extension for S.T.A.L.K.E.R. 2 config modding",
-    "version": "0.1.3",
-    "publisher": "stalker2-modder",
-    "engines": {
-        "vscode": "^1.96.0"
-    },
-    "categories": [
-        "Programming Languages"
+  "name": "stalker-2-navigator",
+  "displayName": "STALKER 2 Navigator",
+  "description": "Navigate, compare and see the source of configuration files for S.T.A.L.K.E.R. 2",
+  "version": "1.1.1",
+  "publisher": "tnebes",
+  "icon": "stalker2NavigatorSmall.png",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "stalker2-config",
+        "aliases": [
+          "Stalker 2 Config",
+          "stalker-cfg"
+        ],
+        "extensions": [
+          ".cfg"
+        ],
+        "filenamePatterns": [
+          "*.cfg*"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "main": "./out/extension.js",
-    "contributes": {
-        "languages": [
-            {
-                "id": "stalker2-config",
-                "aliases": [
-                    "Stalker 2 Config",
-                    "stalker-cfg"
-                ],
-                "extensions": [
-                    ".cfg"
-                ],
-                "filenamePatterns": [
-                    "*.cfg*"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "stalker2-config",
-                "scopeName": "source.stalker2-config",
-                "path": "./syntaxes/stalker2-config.tmLanguage.json"
-            }
-        ],
-        "configuration": {
-            "title": "S.T.A.L.K.E.R. 2 Navigator",
-            "properties": {
-                "stalker2.resourcesPath": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Path to the extracted Stalker 2 resources folder (files are usually searching in Stalker2 and subfolders)."
-                }
-            }
+    "grammars": [
+      {
+        "language": "stalker2-config",
+        "scopeName": "source.stalker2-config",
+        "path": "./syntaxes/stalker2-config.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "S.T.A.L.K.E.R. 2 Navigator",
+      "properties": {
+        "stalker2.resourcesPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the extracted Stalker 2 resources folder (files are usually searching in Stalker2 and subfolders)."
         },
-        "commands": [
-            {
-                "command": "stalker2.clearCache",
-                "title": "Stalker 2: Clear Symbol Cache"
-            }
-        ]
+        "stalker2.search.maxDepth": {
+          "type": "number",
+          "default": 12,
+          "description": "Maximum directory depth to search for definitions."
+        },
+        "stalker2.search.maxFiles": {
+          "type": "number",
+          "default": 50000,
+          "description": "Maximum number of files to scan during a global search."
+        },
+        "stalker2.search.timeout": {
+          "type": "number",
+          "default": 15000,
+          "description": "Timeout in milliseconds for global search operations."
+        }
+      }
     },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "pretest": "npm run compile && npm run lint",
-        "lint": "eslint src --ext ts",
-        "test": "node ./out/test/runTest.js",
-        "package": "vsce package"
-    },
-    "devDependencies": {
-        "@types/node": "^20.0.0",
-        "@types/vscode": "^1.96.0",
-        "@typescript-eslint/eslint-plugin": "^7.0.0",
-        "@typescript-eslint/parser": "^7.0.0",
-        "@vscode/vsce": "^3.7.1",
-        "eslint": "^8.57.0",
-        "typescript": "^5.4.0"
-    }
+    "commands": [
+      {
+        "command": "stalker2.clearCache",
+        "title": "Stalker 2: Clear Symbol Cache"
+      },
+      {
+        "command": "stalker2.showSetup",
+        "title": "Stalker 2: Show Setup/Intro Screen"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "npm version patch --no-git-tag-version && powershell -Command \"if (!(Test-Path built)) { New-Item -ItemType Directory built }; vsce package --allow-missing-repository --out ./built/\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.96.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vscode/vsce": "^3.7.1",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.0"
+  }
 }

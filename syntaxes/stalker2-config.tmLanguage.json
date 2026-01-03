@@ -1,235 +1,235 @@
 {
-    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-    "name": "Stalker 2 Config",
-    "patterns": [
-        {
-            "include": "#comments"
-        },
-        {
-            "include": "#keywords"
-        },
-        {
-            "include": "#tags"
-        },
-        {
-            "include": "#strings"
-        },
-        {
-            "include": "#paths"
-        },
-        {
-            "include": "#properties"
-        },
-        {
-            "include": "#structs"
-        },
-        {
-            "include": "#numbers"
-        },
-        {
-            "include": "#booleans"
-        },
-        {
-            "include": "#types"
-        },
-        {
-            "include": "#brackets"
-        }
-    ],
-    "repository": {
-        "comments": {
-            "patterns": [
-                {
-                    "name": "comment.line.double-slash.stalker2-config",
-                    "match": "//.*$"
-                },
-                {
-                    "name": "comment.block.stalker2-config",
-                    "begin": "/\\*",
-                    "end": "\\*/"
-                }
-            ]
-        },
-        "keywords": {
-            "patterns": [
-                {
-                    "name": "keyword.control.stalker2-config",
-                    "match": "\\b(struct\\.begin|struct\\.end)\\b"
-                },
-                {
-                    "name": "keyword.other.stalker2-config",
-                    "match": "\\b(removenode)\\b"
-                }
-            ]
-        },
-        "tags": {
-            "begin": "\\{",
-            "end": "\\}",
-            "name": "meta.tag.stalker2-config",
-            "patterns": [
-                {
-                    "match": "\\b(refurl|refkey|sid)\\s*=\\s*([^;\\s}]+)",
-                    "captures": {
-                        "1": {
-                            "name": "storage.type.tag.stalker2-config"
-                        },
-                        "2": {
-                            "name": "string.unquoted.tag-value.stalker2-config"
-                        }
-                    }
-                },
-                {
-                    "match": "([a-zA-Z0-9_]+)\\s*=",
-                    "captures": {
-                        "1": {
-                            "name": "entity.other.attribute-name.stalker2-config"
-                        }
-                    }
-                },
-                {
-                    "match": "\\b(bpatch|bskipref)\\b",
-                    "name": "storage.type.tag.stalker2-config"
-                },
-                {
-                    "include": "#strings"
-                },
-                {
-                    "include": "#numbers"
-                },
-                {
-                    "include": "#brackets"
-                }
-            ]
-        },
-        "strings": {
-            "name": "string.quoted.double.stalker2-config",
-            "begin": "\"",
-            "end": "\"",
-            "patterns": [
-                {
-                    "name": "constant.character.escape.stalker2-config",
-                    "match": "\\\\."
-                }
-            ]
-        },
-        "paths": {
-            "patterns": [
-                {
-                    "match": "\\b([a-zA-Z0-9_/.]+)'([^']*)'",
-                    "captures": {
-                        "1": {
-                            "name": "entity.name.type.asset.stalker2-config"
-                        },
-                        "2": {
-                            "name": "string.quoted.single.stalker2-config"
-                        }
-                    }
-                },
-                {
-                    "name": "string.quoted.single.stalker2-config",
-                    "begin": "'",
-                    "end": "'",
-                    "patterns": [
-                        {
-                            "name": "constant.character.escape.stalker2-config",
-                            "match": "\\\\."
-                        }
-                    ]
-                }
-            ]
-        },
-        "properties": {
-            "patterns": [
-                {
-                    "match": "^\\s*([a-zA-Z0-9_]*SID)\\s*=\\s*([^\\s;{}]+)",
-                    "captures": {
-                        "1": {
-                            "name": "variable.other.property.sid.stalker2-config"
-                        },
-                        "2": {
-                            "name": "constant.other.symbol.sid.stalker2-config"
-                        }
-                    }
-                },
-                {
-                    "match": "^\\s*([a-zA-Z0-9_\\.]+)\\s*=",
-                    "captures": {
-                        "1": {
-                            "name": "variable.other.property.stalker2-config"
-                        }
-                    }
-                },
-                {
-                    "match": "^\\s*(\\[\\d+\\])\\s*=\\s*([^\\s;{}]+)",
-                    "captures": {
-                        "1": {
-                            "name": "variable.parameter.index.stalker2-config"
-                        },
-                        "2": {
-                            "name": "entity.name.class.stalker2-config"
-                        }
-                    }
-                }
-            ]
-        },
-        "structs": {
-            "patterns": [
-                {
-                    "match": "([a-zA-Z0-9_\\.]+)\\s*:",
-                    "captures": {
-                        "1": {
-                            "name": "entity.name.type.struct.stalker2-config"
-                        }
-                    }
-                },
-                {
-                    "match": "(\\[\\d+\\])\\s*:",
-                    "captures": {
-                        "1": {
-                            "name": "variable.parameter.index.stalker2-config"
-                        }
-                    }
-                }
-            ]
-        },
-        "numbers": {
-            "name": "constant.numeric.stalker2-config",
-            "match": "-?\\b\\d+(\\.\\d*)?(f|%)?\\b"
-        },
-        "booleans": {
-            "patterns": [
-                {
-                    "name": "constant.language.boolean.stalker2-config",
-                    "match": "\\b(true|false)\\b"
-                }
-            ]
-        },
-        "types": {
-            "patterns": [
-                {
-                    "match": "\\b([a-zA-Z0-9_]+)(::)([a-zA-Z0-9_]+)\\b",
-                    "captures": {
-                        "1": {
-                            "name": "entity.name.class.stalker2-config"
-                        },
-                        "2": {
-                            "name": "keyword.operator.accessor.stalker2-config"
-                        },
-                        "3": {
-                            "name": "variable.other.enummember.stalker2-config"
-                        }
-                    }
-                }
-            ]
-        },
-        "brackets": {
-            "patterns": [
-                {
-                    "match": "\\[\\d+\\]",
-                    "name": "variable.parameter.index.stalker2-config"
-                }
-            ]
-        }
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Stalker 2 Config",
+  "patterns": [
+    {
+      "include": "#comments"
     },
-    "scopeName": "source.stalker2-config"
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#tags"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#paths"
+    },
+    {
+      "include": "#properties"
+    },
+    {
+      "include": "#structs"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#booleans"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#brackets"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.stalker2-config",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.stalker2-config",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.stalker2-config",
+          "match": "\\b(struct\\.begin|struct\\.end)\\b"
+        },
+        {
+          "name": "keyword.other.stalker2-config",
+          "match": "\\b(removenode)\\b"
+        }
+      ]
+    },
+    "tags": {
+      "begin": "\\{",
+      "end": "\\}",
+      "name": "meta.tag.stalker2-config",
+      "patterns": [
+        {
+          "match": "\\b(refurl|refkey|sid)\\s*=\\s*([^;\\s}]+)",
+          "captures": {
+            "1": {
+              "name": "storage.type.tag.stalker2-config"
+            },
+            "2": {
+              "name": "string.unquoted.tag-value.stalker2-config"
+            }
+          }
+        },
+        {
+          "match": "([a-zA-Z0-9_]+)\\s*=",
+          "captures": {
+            "1": {
+              "name": "entity.other.attribute-name.stalker2-config"
+            }
+          }
+        },
+        {
+          "match": "\\b(bpatch|bskipref)\\b",
+          "name": "storage.type.tag.stalker2-config"
+        },
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#numbers"
+        },
+        {
+          "include": "#brackets"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.stalker2-config",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.stalker2-config",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "paths": {
+      "patterns": [
+        {
+          "match": "([a-zA-Z0-9_/.]+)'([^']*)'",
+          "captures": {
+            "1": {
+              "name": "entity.name.type.asset.stalker2-config"
+            },
+            "2": {
+              "name": "string.quoted.single.stalker2-config"
+            }
+          }
+        },
+        {
+          "name": "string.quoted.single.stalker2-config",
+          "begin": "(?<=^|\\s|\\=)'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.stalker2-config",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "properties": {
+      "patterns": [
+        {
+          "match": "^\\s*([a-zA-Z0-9_]*SID)\\s*=\\s*([^\\s;{}]+)",
+          "captures": {
+            "1": {
+              "name": "variable.other.property.sid.stalker2-config"
+            },
+            "2": {
+              "name": "constant.other.symbol.sid.stalker2-config"
+            }
+          }
+        },
+        {
+          "match": "^\\s*([a-zA-Z0-9_\\.]+)\\s*=",
+          "captures": {
+            "1": {
+              "name": "variable.other.property.stalker2-config"
+            }
+          }
+        },
+        {
+          "match": "^\\s*(\\[\\d+\\])\\s*=\\s*([^\\s;{}]+)",
+          "captures": {
+            "1": {
+              "name": "variable.parameter.index.stalker2-config"
+            },
+            "2": {
+              "name": "entity.name.class.stalker2-config"
+            }
+          }
+        }
+      ]
+    },
+    "structs": {
+      "patterns": [
+        {
+          "match": "([a-zA-Z0-9_\\.]+)\\s*:",
+          "captures": {
+            "1": {
+              "name": "entity.name.type.struct.stalker2-config"
+            }
+          }
+        },
+        {
+          "match": "(\\[\\d+\\])\\s*:",
+          "captures": {
+            "1": {
+              "name": "variable.parameter.index.stalker2-config"
+            }
+          }
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.stalker2-config",
+      "match": "-?\\b\\d+(\\.\\d*)?(f|%)?\\b"
+    },
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.stalker2-config",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "match": "\\b([a-zA-Z0-9_]+)(::)([a-zA-Z0-9_]+)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.class.stalker2-config"
+            },
+            "2": {
+              "name": "keyword.operator.accessor.stalker2-config"
+            },
+            "3": {
+              "name": "variable.other.enummember.stalker2-config"
+            }
+          }
+        }
+      ]
+    },
+    "brackets": {
+      "patterns": [
+        {
+          "match": "\\[\\d+\\]",
+          "name": "variable.parameter.index.stalker2-config"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.stalker2-config"
 }

@@ -2,7 +2,7 @@ test_resources
 out
 node_modules/
 .node_modules/
-built/*
+built
 tests/cases/rwc/*
 tests/cases/perf/*
 !tests/cases/webharness/compilerToString.js

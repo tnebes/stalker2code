@@ -12,3 +12,4 @@ node_modules/**
 task.md
 implementation_plan.md
 test_resources/**
+built/**

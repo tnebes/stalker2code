@@ -1,39 +1,71 @@
 # S.T.A.L.K.E.R. 2 Navigator
 
-This extension provides support for S.T.A.L.K.E.R. 2 configuration modding (`.cfg` files).
+Advanced workspace support for S.T.A.L.K.E.R. 2 configuration modding (`.cfg`). 
 
-## Features
+## Key Features
 
-- **Syntax Highlighting**: tailored for `.cfg` files, highlighting `struct.begin`, `struct.end`, `{bpatch}`, and more.
-- **Go to Definition**: 
-    - Click on a struct name to find where it is defined in the original game resources.
-    - Click on a file name (ending in `.cfg`) to open that file.
-    - Click on a SID to find its definition.
+- **Robust Navigation**: Instant "Go to Definition" (F12) or `Ctrl+Click` for:
+  - **Prototypes & Structs**: Cross-file lookups for base classes and referenced prototypes.
+  - **Resource Files**: Direct navigation to files referenced in `{refurl}`.
+  - **String IDs (SID)**: Jump to source definitions of unique identifiers.
+- **Smart Validation**: Real-time syntax diagnostics for unclosed blocks and duplicate keys.
+- **Hierarchical Outline**: Clean document structure view for easy navigation of massive config files.
+- **AST-Powered**: High-performance parsing with centralized caching for a smooth experience.
+
+### Syntax Highlighting
+
+The video shows that a STALKER 2 `.cfg` file can have syntax highlighting when the extension is activated and the language is set to `stalker 2 config`
+
+![Syntax Highlighting](https://github.com/tnebes/stalker2code/blob/master/media/navigatorSyntax.gif?raw=true)
+
+### Demo
+
+The video shows how a user can click on definitions of keys and structs and be brought to the original file for reference. Additionally, it also shows code folding of structs.
+
+![Demo](https://github.com/tnebes/stalker2code/blob/master/media/smallDemo.gif?raw=true)
+
+### Problem Reporting
+
+The video shows that the user can easily fix configuration files by solving issue related to syntax, such as forgetting to close a `struct` or misstyping a certain word.
+
+![Problem Reporting](https://github.com/tnebes/stalker2code/blob/master/media/problemReport.gif?raw=true)
+
+### Outline
+
+The screenshot shows the outline of a `.cfg` file.
+
+![Outline](https://github.com/tnebes/stalker2code/blob/master/media/outline.png?raw=true)
 
 ## Setup
 
-1. **Install**: Load this extension in VS Code.
-2. **Configure**: Go to VS Code Settings (`Ctrl+,`).
-3. Search for `Navigator`.
-4. Set `S.T.A.L.K.E.R. 2 Navigator: Resources Path` to the folder containing your unpacked game resources. The chosen folder must be `Stalker2`
+1. **Resources Path**: Set the `stalker2.resourcesPath` in settings to your unpacked game data folder (must contain the `Stalker2` subfolder). The unpacked game data folder is either derived from the Zone Toolkit or by downloading the unpacked game data from a modding community.
+2. **Indexing**: The extension automatically indexes files on demand.
 
-## Usage
+## Configuration
 
-- Open any `.cfg` file.
-- **Ctrl+Click** (or **F12**) on a struct name, SID, or file reference to navigate.
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `stalker2.resourcesPath` | Path to extracted Stalker 2 resources. | `""` |
+| `stalker2.search.maxDepth` | Maximum directory depth for symbol scanning. | `12` |
+| `stalker2.search.maxFiles` | Maximum number of files to scan during search. | `50000` |
+| `stalker2.search.timeout` | Timeout (ms) for global search operations. | `15000` |
 
-## Development
+## Commands
 
-- Run `npm install` to install dependencies.
-- Open in VS Code.
-- Press **F5** to launch a debug window with the extension loaded.
+- `Stalker 2: Clear Symbol Cache`: Resets the internal symbol and AST cache.
 
-## Building to .vsix
+---
 
-To package the extension for manual installation:
-1. Run `npm install`
-2. Run `npx vsce package`
+### Development
 
-# Rationale
+1. `npm install`
+2. `F5` to start debugging.
+3. `npm run package` to generate a `.vsix` in `./built/`.
 
-This visual studio code extension is powered exclusively by spite.
+### Rationale
+
+This Visual Studio Code extension is powered exclusively by spite.
+
+### Inspiration
+
+Inspired by and code partially stolen from [stalker2-cfg-extension](https://github.com/Felicheat/stalker2-cfg-extension) by [Felicheat](https://github.com/Felicheat).
