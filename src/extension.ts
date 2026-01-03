@@ -9,6 +9,8 @@ import { StalkerDefinitionProvider } from "./definitionProvider";
 import { clearCache } from "./cache";
 import { activateDiagnostics } from "./providers/diagnosticsProvider";
 import { StalkerDocumentSymbolProvider } from "./providers/symbolProvider";
+import { StalkerHoverProvider } from "./providers/hoverProvider";
+import { StalkerCompletionItemProvider } from "./providers/completionProvider";
 import { ASTManager } from "./astManager";
 import { SetupWebview } from "./setupWebview";
 import { validateResourcesPath } from "./validation";
@@ -71,6 +73,19 @@ export function activate(context: vscode.ExtensionContext) {
     new StalkerDocumentSymbolProvider()
   );
 
+  // Register Hover Provider
+  const hoverProvider = vscode.languages.registerHoverProvider(
+    { language: LANGUAGE_ID },
+    new StalkerHoverProvider()
+  );
+
+  // Register Completion Item Provider
+  const completionProvider = vscode.languages.registerCompletionItemProvider(
+    { language: LANGUAGE_ID },
+    new StalkerCompletionItemProvider(),
+    ":" // Trigger on ':'
+  );
+
   // Register Clear Cache Command
   const clearCacheCommand = vscode.commands.registerCommand(
     "stalker2.clearCache",
@@ -95,6 +110,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     definitionProvider,
     symbolProvider,
+    hoverProvider,
+    completionProvider,
     clearCacheCommand,
     showSetupCommand,
     extensionOutputChannel

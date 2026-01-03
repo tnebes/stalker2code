@@ -24,7 +24,7 @@ export class SEARCH_LIMITS {
 }
 
 export const REGEX = {
-  WORD_RANGE: /[\w./\\:\[\]]+/,
+  WORD_RANGE: /[\w./\\:\[\]*]+/,
   REFURL: /refurl\s*=\s*([^;}\s]+)/,
   REFKEY: /refkey\s*=\s*([^;}\s]+)/,
   CFG_FILE_EXT: /\.cfg$/i,

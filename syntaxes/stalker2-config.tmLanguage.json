@@ -160,7 +160,7 @@
           }
         },
         {
-          "match": "^\\s*(\\[\\d+\\])\\s*=\\s*([^\\s;{}]+)",
+          "match": "^\\s*(\\[(?:\\d+|\\*)\\])\\s*=\\s*([^\\s;{}]+)",
           "captures": {
             "1": {
               "name": "variable.parameter.index.stalker2-config"
@@ -183,7 +183,7 @@
           }
         },
         {
-          "match": "(\\[\\d+\\])\\s*:",
+          "match": "(\\[(?:\\d+|\\*)\\])\\s*:",
           "captures": {
             "1": {
               "name": "variable.parameter.index.stalker2-config"
@@ -225,7 +225,7 @@
     "brackets": {
       "patterns": [
         {
-          "match": "\\[\\d+\\]",
+          "match": "\\[(?:\\d+|\\*)\\]",
           "name": "variable.parameter.index.stalker2-config"
         }
       ]

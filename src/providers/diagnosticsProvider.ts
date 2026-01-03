@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { ASTManager } from "../astManager";
 import { ASTNode, BlockNode, PropertyNode, ErrorNode } from "../parser/ast";
 import { extensionOutputChannel } from "../extension";
+import { validateCfgFilename } from "../validation";
 
 export function activateDiagnostics(context: vscode.ExtensionContext) {
   const diagnosticCollection =
@@ -14,6 +15,18 @@ export function activateDiagnostics(context: vscode.ExtensionContext) {
 
     const diagnostics: vscode.Diagnostic[] = [];
     // extensionOutputChannel.appendLine(`Updating diagnostics for: ${document.uri.fsPath}`);
+
+    // Validate filename pattern
+    const filenameValidation = validateCfgFilename(document.uri.fsPath);
+    if (!filenameValidation.valid && filenameValidation.error) {
+      diagnostics.push(
+        new vscode.Diagnostic(
+          new vscode.Range(0, 0, 0, 0), // Show at the top of the file
+          filenameValidation.error,
+          vscode.DiagnosticSeverity.Warning
+        )
+      );
+    }
 
     function collectDiagnostics(node: ASTNode) {
       if (node.type === "Error") {

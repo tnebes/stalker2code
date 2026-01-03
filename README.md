@@ -1,6 +1,6 @@
 # S.T.A.L.K.E.R. 2 Navigator
 
-Advanced workspace support for S.T.A.L.K.E.R. 2 configuration modding (`.cfg`). 
+Advanced workspace support for S.T.A.L.K.E.R. 2 configuration modding (`.cfg`).
 
 ## Key Features
 
@@ -10,6 +10,10 @@ Advanced workspace support for S.T.A.L.K.E.R. 2 configuration modding (`.cfg`).
   - **String IDs (SID)**: Jump to source definitions of unique identifiers.
 - **Smart Validation**: Real-time syntax diagnostics for unclosed blocks and duplicate keys.
 - **Hierarchical Outline**: Clean document structure view for easy navigation of massive config files.
+- **Enum Support**: Enhanced features for S.T.A.L.K.E.R. 2 enums:
+  - **Syntax Highlighting**: Proper highlighting for `Enum::Member` pairs.
+  - **Hover Tooltips**: Mouse over any enum to see its numeric value and all other possible members.
+  - **Intellisense**: Auto-completion for enum names and members when typing `::`.
 - **AST-Powered**: High-performance parsing with centralized caching for a smooth experience.
 
 ### Syntax Highlighting
@@ -43,12 +47,12 @@ The screenshot shows the outline of a `.cfg` file.
 
 ## Configuration
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `stalker2.resourcesPath` | Path to extracted Stalker 2 resources. | `""` |
-| `stalker2.search.maxDepth` | Maximum directory depth for symbol scanning. | `12` |
+| Setting                    | Description                                    | Default |
+| -------------------------- | ---------------------------------------------- | ------- |
+| `stalker2.resourcesPath`   | Path to extracted Stalker 2 resources.         | `""`    |
+| `stalker2.search.maxDepth` | Maximum directory depth for symbol scanning.   | `12`    |
 | `stalker2.search.maxFiles` | Maximum number of files to scan during search. | `50000` |
-| `stalker2.search.timeout` | Timeout (ms) for global search operations. | `15000` |
+| `stalker2.search.timeout`  | Timeout (ms) for global search operations.     | `15000` |
 
 ## Commands
 
@@ -61,6 +65,19 @@ The screenshot shows the outline of a `.cfg` file.
 1. `npm install`
 2. `F5` to start debugging.
 3. `npm run package` to generate a `.vsix` in `./built/`.
+
+### Enum Data Regeneration
+
+The extension comes with a pre-built list of S.T.A.L.K.E.R. 2 enums. If you need to update this list from a new version of the game:
+
+1. Obtain the `Stalker2_enums.txt` file (usually found in community modding resources or dumped from the game).
+2. Run the transformation script to update the internal TypeScript enum class:
+
+```powershell
+node tools/transform-enums.js path/to/Stalker2_enums.txt src/stalkerEnums.ts
+```
+
+This will parse the C++ enums and update `src/stalkerEnums.ts` with a minified version used by the extension for hover info and intellisense.
 
 ### Rationale
 

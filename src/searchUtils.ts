@@ -163,11 +163,17 @@ export async function tieredSearch(
 
   // Add underscore-stripped version if not already present
   if (fileName.includes("_")) {
-    const rootName = fileName.split("_")[0] + ".cfg";
-    if (!baseFileNames.includes(rootName) && rootName !== fileName) {
-      baseFileNames.push(rootName);
+    let rootPart = fileName.split("_")[0];
+    // If rootPart already has .cfg (like in file.cfg_patch), don't add it again
+    if (REGEX.CFG_FILE_EXT.test(rootPart)) {
+      baseFileNames.push(rootPart);
+    } else {
+      baseFileNames.push(rootPart + ".cfg");
     }
   }
+
+  // Deduplicate and filter out current file
+  baseFileNames = [...new Set(baseFileNames)].filter((n) => n !== fileName);
 
   for (const bName of baseFileNames) {
     outputChannel.appendLine(`Tier 1: Searching in base file: ${bName}`);

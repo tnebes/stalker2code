@@ -79,3 +79,53 @@ async function hasCfgFiles(dir: string, depth: number = 0): Promise<boolean> {
   }
   return false;
 }
+
+/**
+ * Validates the filename of a .cfg file based on the directory it's in.
+ * Based on cfg-rule.md:
+ * - Prototype CFGs (in directories ending with "Prototypes"): [OriginalFileName]_patch_[ModName].cfg
+ * - Non-Prototype CFGs (standard variables): [OriginalFileName].cfg_patch_[ModName]
+ */
+export function validateCfgFilename(filePath: string): ValidationResult {
+  const fileName = path.basename(filePath);
+  const dirPath = path.dirname(filePath);
+  const dirName = path.basename(dirPath);
+
+  // Only validate .cfg files (not .cfg.bin or other extensions)
+  if (!fileName.endsWith(".cfg") || fileName.includes(".cfg.bin")) {
+    return { valid: true };
+  }
+
+  // Check if the directory ends with "Prototypes" (case-insensitive)
+  const isPrototypesDir = /prototypes$/i.test(dirName);
+
+  if (isPrototypesDir) {
+    // Prototype CFG: should be named [OriginalFileName]_patch_[ModName].cfg
+    // Pattern: <basename>_patch_<modname>.cfg
+    const prototypePattern = /^[^_]+_patch_[^.]+\.cfg$/;
+
+    if (!prototypePattern.test(fileName)) {
+      return {
+        valid: false,
+        error: `Prototype CFG files in directories ending with "Prototypes" should follow the pattern: [OriginalFileName]_patch_[ModName].cfg (e.g., "EffectPrototypes_patch_MyMod.cfg")`,
+      };
+    }
+  } else {
+    // Non-Prototype CFG: should be named [OriginalFileName].cfg_patch_[ModName]
+    // Pattern: <basename>.cfg_patch_<modname>
+    const nonPrototypePattern = /\.cfg_patch_[^.]+$/;
+
+    // Only validate if it looks like it's trying to be a patch file
+    // (contains "patch" in the name)
+    if (fileName.toLowerCase().includes("patch")) {
+      if (!nonPrototypePattern.test(fileName)) {
+        return {
+          valid: false,
+          error: `Non-Prototype CFG patch files should follow the pattern: [OriginalFileName].cfg_patch_[ModName] (e.g., "CoreVariables.cfg_patch_MyMod")`,
+        };
+      }
+    }
+  }
+
+  return { valid: true };
+}
