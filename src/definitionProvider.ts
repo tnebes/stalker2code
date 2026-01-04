@@ -13,7 +13,7 @@ import {
   findFileExact,
   findInLines,
   BlockContext,
-} from "./searchUtils";
+} from "./search";
 import { ASTManager } from "./astManager";
 import { ASTNode, BlockNode, PropertyNode } from "./parser/ast";
 
@@ -174,6 +174,20 @@ export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
         symbolCache.set(cacheKey, loc);
         return loc;
       }
+
+      // Direct definition click: should we search "upstream"?
+      const normResources = path.normalize(resourcesPath).toLowerCase();
+      const normDoc = path.normalize(document.fileName).toLowerCase();
+      const isInResources = normDoc.startsWith(normResources);
+      const isPatchFile = REGEX.CFG_PATCH_EXT.test(document.fileName);
+
+      if (isInResources && !isPatchFile) {
+        this.outputChannel.appendLine(
+          `Already in source of truth (non-patch): ${searchWord}. Skipping global search.`
+        );
+        return null;
+      }
+
       this.outputChannel.appendLine(
         `Direct definition click detected for: ${searchWord}. Initiating global/base search...`
       );
