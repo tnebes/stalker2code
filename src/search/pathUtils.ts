@@ -70,3 +70,35 @@ export function findParentStruct(
 
   return findParent(ast.children, position, []) || [];
 }
+
+export function isPatchFile(filePath: string, resourcesPath: string): boolean {
+  if (REGEX.CFG_PATCH_EXT.test(filePath)) return true;
+
+  const normResources = path
+    .normalize(resourcesPath)
+    .toLowerCase()
+    .replace(/\\/g, "/");
+  const normFilePath = path
+    .normalize(filePath)
+    .toLowerCase()
+    .replace(/\\/g, "/");
+
+  // If not in resources path, it's considered a patch/mod file
+  if (resourcesPath && !normFilePath.startsWith(normResources)) return true;
+
+  // Folder Technique check: GameData/EffectPrototypes/SomeFile.cfg
+  // If the parent directory name matches a base file pattern
+  const fileName = path.basename(filePath);
+  const dirPath = path.dirname(filePath);
+  const parentDirName = path.basename(dirPath);
+
+  // If parent directory is NOT GameData but is inside GameData, it's likely a prototype folder
+  if (
+    parentDirName.toLowerCase() !== "gamedata" &&
+    dirPath.toLowerCase().includes("gamedata")
+  ) {
+    return true;
+  }
+
+  return false;
+}

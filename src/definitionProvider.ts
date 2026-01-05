@@ -13,9 +13,11 @@ import {
   findFileExact,
   findInLines,
   BlockContext,
+  isPatchFile,
 } from "./search";
 import { ASTManager } from "./astManager";
 import { ASTNode, BlockNode, PropertyNode } from "./parser/ast";
+import { STALKER_KEYWORDS } from "./constants";
 
 export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
   constructor(private outputChannel: vscode.OutputChannel) {}
@@ -53,7 +55,8 @@ export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
     const currentConfig = vscode.workspace.getConfiguration(
       EXTENSION_CONFIG_SECTION
     );
-    const resourcesPath = currentConfig.get<string>(CONFIG_RESOURCES_PATH);
+    const resourcesPath =
+      currentConfig.get<string>(CONFIG_RESOURCES_PATH) || "";
 
     if (
       !resourcesPath ||
@@ -82,6 +85,11 @@ export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
     );
     if (!wordRange) return null;
     let word = document.getText(wordRange);
+
+    // Exclude keywords
+    if (STALKER_KEYWORDS.includes(word.toLowerCase())) {
+      return null;
+    }
 
     // Recognition of enums like EAttachType::Scope
     let searchWord = word;
@@ -164,6 +172,10 @@ export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
       searchWord,
       searchParentPath
     );
+
+    const isGeneric = /^\[(\d+|\*)\]$/.test(searchWord);
+    const isPatch = isPatchFile(document.fileName, resourcesPath);
+
     if (localResult) {
       const isSelf = localResult.range.contains(position);
       if (!isSelf) {
@@ -176,12 +188,7 @@ export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
       }
 
       // Direct definition click: should we search "upstream"?
-      const normResources = path.normalize(resourcesPath).toLowerCase();
-      const normDoc = path.normalize(document.fileName).toLowerCase();
-      const isInResources = normDoc.startsWith(normResources);
-      const isPatchFile = REGEX.CFG_PATCH_EXT.test(document.fileName);
-
-      if (isInResources && !isPatchFile) {
+      if (!isPatch) {
         this.outputChannel.appendLine(
           `Already in source of truth (non-patch): ${searchWord}. Skipping global search.`
         );
@@ -190,6 +197,13 @@ export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
 
       this.outputChannel.appendLine(
         `Direct definition click detected for: ${searchWord}. Initiating global/base search...`
+      );
+      skipTier0 = true;
+    } else if (isGeneric && isPatch) {
+      // If we clicked on a generic symbol in a patch file and no local definition was found,
+      // we should skip Tier 0 and look in base files.
+      this.outputChannel.appendLine(
+        `Generic symbol '${searchWord}' in patch file. Skipping local search...`
       );
       skipTier0 = true;
     }

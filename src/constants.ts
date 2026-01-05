@@ -33,3 +33,13 @@ export const REGEX = {
   STRUCT_END: /^\s*struct\.end/i,
   ASSIGNMENT: /^\s*([\w./\\]+)\s*[=:]/i,
 };
+
+export const STALKER_KEYWORDS = [
+  "struct.begin",
+  "struct.end",
+  "bpatch",
+  "bskipref",
+  "removenode",
+  "refurl",
+  "refkey",
+];

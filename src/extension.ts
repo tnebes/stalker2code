@@ -14,6 +14,7 @@ import { StalkerCompletionItemProvider } from "./providers/completionProvider";
 import { ASTManager } from "./astManager";
 import { SetupWebview } from "./setupWebview";
 import { validateResourcesPath } from "./validation";
+import { InheritanceTreeProvider } from "./inheritanceProvider";
 
 export let extensionOutputChannel: vscode.OutputChannel;
 
@@ -107,6 +108,30 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Register Inheritance View
+  const inheritanceProvider = new InheritanceTreeProvider(
+    extensionOutputChannel
+  );
+  vscode.window.registerTreeDataProvider(
+    "stalker2.inheritanceView",
+    inheritanceProvider
+  );
+
+  const showInheritanceCommand = vscode.commands.registerCommand(
+    "stalker2.showInheritance",
+    async (uri: vscode.Uri) => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === LANGUAGE_ID) {
+        await inheritanceProvider.showInheritance(
+          editor.document,
+          editor.selection.active
+        );
+        // Focus the view
+        vscode.commands.executeCommand("stalker2.inheritanceView.focus");
+      }
+    }
+  );
+
   context.subscriptions.push(
     definitionProvider,
     symbolProvider,
@@ -114,6 +139,7 @@ export function activate(context: vscode.ExtensionContext) {
     completionProvider,
     clearCacheCommand,
     showSetupCommand,
+    showInheritanceCommand,
     extensionOutputChannel
   );
 }

@@ -2,7 +2,7 @@
   "name": "stalker-2-navigator",
   "displayName": "STALKER 2 Navigator",
   "description": "Navigate, compare and see the source of configuration files for S.T.A.L.K.E.R. 2",
-  "version": "1.2.1",
+  "version": "1.2.9",
   "publisher": "tnebes",
   "icon": "stalker2NavigatorSmall.png",
   "engines": {
@@ -61,6 +61,24 @@
         }
       }
     },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "stalker2-navigator",
+          "title": "S.T.A.L.K.E.R. 2",
+          "icon": "stalker2NavigatorSmall.png"
+        }
+      ]
+    },
+    "views": {
+      "stalker2-navigator": [
+        {
+          "id": "stalker2.inheritanceView",
+          "name": "Inheritance Structure",
+          "type": "tree"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "stalker2.clearCache",
@@ -69,8 +87,21 @@
       {
         "command": "stalker2.showSetup",
         "title": "Stalker 2: Show Setup/Intro Screen"
+      },
+      {
+        "command": "stalker2.showInheritance",
+        "title": "Stalker 2: Show Inheritance Structure"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "stalker2.showInheritance",
+          "when": "resourceLangId == stalker2-config",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

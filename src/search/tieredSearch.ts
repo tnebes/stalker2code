@@ -4,7 +4,7 @@ import * as path from "path";
 import { REGEX, SEARCH_LIMITS } from "../constants";
 import { BlockContext } from "./types";
 import { findInLines } from "./lineSearch";
-import { findModRoot } from "./pathUtils";
+import { findModRoot, isPatchFile } from "./pathUtils";
 import {
   findFileExact,
   findSymbolInFileLoc,
@@ -26,6 +26,7 @@ export async function tieredSearch(
   const startTime = Date.now();
   const fileName = path.basename(document.fileName);
   const parentNames = parentContext.map((c) => c.name);
+  const isPatch = isPatchFile(document.fileName, resourcesPath);
 
   if (!skipTier0) {
     // Tier 0: Current File Search
@@ -120,6 +121,19 @@ export async function tieredSearch(
     baseFileNames.push(fileName);
   }
 
+  // Folder/Subdirectory technique check
+  const documentPath = path.normalize(document.fileName);
+  const dirPath = path.dirname(documentPath);
+  const parentDirName = path.basename(dirPath);
+
+  // If we are in a subdirectory of GameData, the subdirectory name is often the base file name
+  if (
+    parentDirName.toLowerCase() !== "gamedata" &&
+    dirPath.toLowerCase().includes("gamedata")
+  ) {
+    baseFileNames.push(parentDirName + ".cfg");
+  }
+
   if (fileName.includes("_")) {
     let rootPart = fileName.split("_")[0];
     if (REGEX.CFG_FILE_EXT.test(rootPart)) {
@@ -129,21 +143,64 @@ export async function tieredSearch(
     }
   }
 
-  baseFileNames = [...new Set(baseFileNames)].filter((n) => n !== fileName);
+  const originalBases = [...new Set(baseFileNames)];
+  baseFileNames = originalBases.filter((n) => {
+    // Only filter out ourselves if we are NOT in a patch file
+    const nLower = n.toLowerCase();
+    const fileLower = fileName.toLowerCase();
 
-  for (const bName of baseFileNames) {
-    outputChannel.appendLine(`Tier 1: Searching in base file: ${bName}`);
-    const baseFileDef = await findSymbolInFileByName(
-      word,
-      bName,
-      resourcesPath,
-      token,
-      parentContext,
-      outputChannel
+    if (nLower === fileLower) {
+      if (isPatch) {
+        return true; // Keep it, it's a base file with the same name as our patch
+      }
+      return false; // Same file name and we ARE the source of truth, skip
+    }
+    return true;
+  });
+
+  if (baseFileNames.length > 0) {
+    outputChannel.appendLine(
+      `Tier 1: Potential base files: ${baseFileNames.join(", ")}`
     );
-    if (baseFileDef && baseFileDef.uri.fsPath !== document.uri.fsPath) {
-      outputChannel.appendLine(`  MATCH found in base file: ${bName}`);
-      return baseFileDef;
+    for (const bName of baseFileNames) {
+      outputChannel.appendLine(`Tier 1: Searching in base file: ${bName}`);
+
+      // Try with original context
+      let baseFileDef = await findSymbolInFileByName(
+        word,
+        bName,
+        resourcesPath,
+        token,
+        parentContext,
+        outputChannel
+      );
+
+      // If failed and no context, try implicit parent (Folder Technique)
+      if (
+        !baseFileDef &&
+        parentContext.length === 0 &&
+        bName.toLowerCase() === parentDirName.toLowerCase() + ".cfg"
+      ) {
+        outputChannel.appendLine(
+          `  1.1: Retrying with implicit parent: ${parentDirName}`
+        );
+        baseFileDef = await findSymbolInFileByName(
+          word,
+          bName,
+          resourcesPath,
+          token,
+          [{ name: parentDirName }],
+          outputChannel
+        );
+      }
+
+      if (
+        baseFileDef &&
+        path.normalize(baseFileDef.uri.fsPath) !== documentPath
+      ) {
+        outputChannel.appendLine(`  MATCH found in base file: ${bName}`);
+        return baseFileDef;
+      }
     }
   }
 
