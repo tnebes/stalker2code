@@ -2,7 +2,7 @@
   "name": "stalker-2-navigator",
   "displayName": "STALKER 2 Navigator",
   "description": "Navigate, compare and see the source of configuration files for S.T.A.L.K.E.R. 2",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "publisher": "tnebes",
   "icon": "stalker2NavigatorSmall.png",
   "engines": {
@@ -73,6 +73,7 @@
     "views": {
       "stalker2-navigator": [
         {
+          "icon": "stalker2NavigatorSmall.png",
           "id": "stalker2.inheritanceView",
           "name": "Inheritance Structure",
           "type": "tree"
