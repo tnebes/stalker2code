@@ -24,7 +24,10 @@ export function findInLines(
         `^\\s*${escapedSymbol}\\s*[:=]\\s*struct\\.begin:?`,
         "i"
       );
-      const sidRegex = new RegExp(`sid\\s*=\\s*"?${escapedSymbol}"?\\s*$`, "i");
+      const sidRegex = new RegExp(
+        `\\b(\\w*)sid\\s*[=:]\\s*"?${escapedSymbol}"?(\\s*;.*|\\s*$)`,
+        "i"
+      );
       const assignmentRegex = new RegExp(`^\\s*${escapedSymbol}\\s*[=:]`, "i");
 
       // Pass 1: Highest priority (Structs)

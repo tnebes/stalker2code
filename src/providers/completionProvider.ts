@@ -35,16 +35,59 @@ export class StalkerCompletionItemProvider
       }
     }
 
+    // Check for struct.begin modifiers
+    if (/\bstruct\.begin\s*$/.test(linePrefix)) {
+      const bpatch = new vscode.CompletionItem(
+        "{bpatch}",
+        vscode.CompletionItemKind.Keyword
+      );
+      bpatch.insertText = "{bpatch}";
+      bpatch.documentation = "Marks this struct as a patch.";
+
+      const refurl = new vscode.CompletionItem(
+        "{refurl}",
+        vscode.CompletionItemKind.Keyword
+      );
+      refurl.insertText = new vscode.SnippetString("{refurl=$1}");
+      refurl.documentation = "Reference to a struct in another file.";
+
+      const refkey = new vscode.CompletionItem(
+        "{refkey}",
+        vscode.CompletionItemKind.Keyword
+      );
+      refkey.insertText = new vscode.SnippetString("{refkey=$1}");
+      refkey.documentation = "Reference to a struct in the same file.";
+
+      return [bpatch, refurl, refkey];
+    }
+
     // Generic enum completion
     if (context.triggerCharacter !== ":") {
-      return Object.keys(StalkerEnums).map((name) => {
-        const item = new vscode.CompletionItem(
-          name,
-          vscode.CompletionItemKind.Enum
-        );
-        item.detail = "Stalker 2 Enum";
-        return item;
-      });
+      const items: vscode.CompletionItem[] = Object.keys(StalkerEnums).map(
+        (name) => {
+          const item = new vscode.CompletionItem(
+            name,
+            vscode.CompletionItemKind.Enum
+          );
+          item.detail = "Stalker 2 Enum";
+          return item;
+        }
+      );
+
+      // Add struct.begin snippet
+      const structBegin = new vscode.CompletionItem(
+        "struct.begin",
+        vscode.CompletionItemKind.Snippet
+      );
+      structBegin.insertText = new vscode.SnippetString(
+        "struct.begin\n\t$0\nstruct.end"
+      );
+      structBegin.detail = "Struct Block";
+      structBegin.documentation =
+        "Creates a new struct block with matching end.";
+      items.push(structBegin);
+
+      return items;
     }
 
     return [];

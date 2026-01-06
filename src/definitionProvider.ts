@@ -111,8 +111,30 @@ export class StalkerDefinitionProvider implements vscode.DefinitionProvider {
         ? `${parentNames.join("::")}::${searchWord}`
         : searchWord;
 
-    // Special case: refurl + refkey logic
+    // Check if we are clicking on a value (potential SID reference)
     const lineText = document.lineAt(position.line).text;
+    const wordStart = wordRange.start.character;
+    const textBeforeWord = lineText.substring(0, wordStart).trim();
+    const isReference =
+      textBeforeWord.endsWith("=") || textBeforeWord.endsWith(":");
+
+    if (isReference) {
+      this.outputChannel.appendLine(
+        `Potential SID reference detected: ${searchWord}. Prioritizing global search.`
+      );
+      const sidLocation = await tieredSearch(
+        searchWord,
+        document,
+        resourcesPath,
+        token,
+        [], // Global search without parent context
+        this.outputChannel,
+        position
+      );
+      if (sidLocation) return sidLocation;
+    }
+
+    // Special case: refurl + refkey logic
     const refurlMatch = lineText.match(REGEX.REFURL);
     const refkeyRegex = /refkey\s*=\s*([^\s;{}]+)/i;
     const refkeyMatch = lineText.match(refkeyRegex);
