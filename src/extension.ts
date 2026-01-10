@@ -15,6 +15,7 @@ import { ASTManager } from "./astManager";
 import { SetupWebview } from "./setupWebview";
 import { validateResourcesPath } from "./validation";
 import { InheritanceTreeProvider } from "./inheritanceProvider";
+import { ComputedViewProvider } from "./computedViewProvider";
 
 export let extensionOutputChannel: vscode.OutputChannel;
 
@@ -132,6 +133,21 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  const showComputedViewCommand = vscode.commands.registerCommand(
+    "stalker2.showComputedView",
+    async (uri: vscode.Uri) => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === LANGUAGE_ID) {
+        await ComputedViewProvider.show(
+          context,
+          editor.document,
+          editor.selection.active,
+          extensionOutputChannel
+        );
+      }
+    }
+  );
+
   context.subscriptions.push(
     definitionProvider,
     symbolProvider,
@@ -140,6 +156,7 @@ export function activate(context: vscode.ExtensionContext) {
     clearCacheCommand,
     showSetupCommand,
     showInheritanceCommand,
+    showComputedViewCommand,
     extensionOutputChannel
   );
 }

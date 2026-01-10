@@ -1,8 +1,12 @@
 {
   "name": "stalker-2-navigator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tnebes/stalker2code.git"
+  },
   "displayName": "STALKER 2 Navigator",
   "description": "Navigate, compare and see the source of configuration files for S.T.A.L.K.E.R. 2",
-  "version": "1.3.1",
+  "version": "1.4.1",
   "publisher": "tnebes",
   "icon": "stalker2NavigatorSmall.png",
   "engines": {
@@ -92,6 +96,10 @@
       {
         "command": "stalker2.showInheritance",
         "title": "Stalker 2: Show Inheritance Structure"
+      },
+      {
+        "command": "stalker2.showComputedView",
+        "title": "Stalker 2: Show Computed View"
       }
     ],
     "menus": {
@@ -99,7 +107,12 @@
         {
           "command": "stalker2.showInheritance",
           "when": "resourceLangId == stalker2-config",
-          "group": "navigation"
+          "group": "navigation@1"
+        },
+        {
+          "command": "stalker2.showComputedView",
+          "when": "resourceLangId == stalker2-config",
+          "group": "navigation@2"
         }
       ]
     }
@@ -111,7 +124,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "package": "npm version patch --no-git-tag-version && powershell -Command \"if (!(Test-Path built)) { New-Item -ItemType Directory built }; vsce package --allow-missing-repository --out ./built/\""
+    "package": "npm version patch --no-git-tag-version && powershell -Command \"if (!(Test-Path built)) { New-Item -ItemType Directory built }; vsce package --out ./built/\""
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
