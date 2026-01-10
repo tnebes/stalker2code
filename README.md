@@ -8,6 +8,12 @@ Advanced workspace support for S.T.A.L.K.E.R. 2 configuration modding (`.cfg`).
   - **Prototypes & Structs**: Cross-file lookups for base classes and referenced prototypes.
   - **Resource Files**: Direct navigation to files referenced in `{refurl}`.
   - **String IDs (SID)**: Jump to source definitions of unique identifiers.
+- **Inheritance Visualizer**: A dedicated sidebar tree view that shows the complete parent and child hierarchy for any struct.
+- **Computed View**: A resolved view of any object:
+  - **Recursive Resolution**: Traces the entire inheritance chain ({refurl}, {refkey}).
+  - **Patch Merging**: Correct merges using S.T.A.L.K.E.R. 2 rules ({bpatch}, `{bskipref}`, `removenode`).
+  - **Array Handling**: Correctly appends elements via `[*]`.
+  - **Two-Column Layout**: Code on the left, source metadata (file, line, refkey) on the right.
 - **Smart Validation**: Real-time syntax diagnostics for unclosed blocks and duplicate keys.
 - **Hierarchical Outline**: Clean document structure view for easy navigation of massive config files.
 - **Enum Support**: Enhanced features for S.T.A.L.K.E.R. 2 enums:
@@ -16,34 +22,35 @@ Advanced workspace support for S.T.A.L.K.E.R. 2 configuration modding (`.cfg`).
   - **Intellisense**: Auto-completion for enum names and members when typing `::`.
 - **AST-Powered**: High-performance parsing with centralized caching for a smooth experience.
 
+### Inheritance and Computed View
+
+The **Inheritance Structure** view provides a tree representation of a struct's lineage. The **Computed View** builds upon this by generating a "final" version of the struct as the game would see it. It features a responsive two-column layout where you can click any source annotation to jump directly to the original file.
+
+![Inheritance and Computed View](https://github.com/tnebes/stalker2code/blob/master/media/inheritanceComputedView.gif?raw=true)
+
 ### Syntax Highlighting
 
-The video shows that a STALKER 2 `.cfg` file can have syntax highlighting when the extension is activated and the language is set to `stalker 2 config`
+The extension provides syntax highlighting for `.cfg` files, including strings, numbers, keywords, and enums.
 
 ![Syntax Highlighting](https://github.com/tnebes/stalker2code/blob/master/media/navigatorSyntax.gif?raw=true)
 
-### Demo
-
-The video shows how a user can click on definitions of keys and structs and be brought to the original file for reference. Additionally, it also shows code folding of structs.
-
-![Demo](https://github.com/tnebes/stalker2code/blob/master/media/smallDemo.gif?raw=true)
-
 ### Problem Reporting
 
-The video shows that the user can easily fix configuration files by solving issue related to syntax, such as forgetting to close a `struct` or misstyping a certain word.
+Real-time validation helps catch common modding errors like forgetting to close a `struct.begin` block or using duplicate keys within the same scope.
 
 ![Problem Reporting](https://github.com/tnebes/stalker2code/blob/master/media/problemReport.gif?raw=true)
 
 ### Outline
 
-The screenshot shows the outline of a `.cfg` file.
+The Outline view allows for quick navigation through large configuration files by listing all defined structs and their nesting.
 
 ![Outline](https://github.com/tnebes/stalker2code/blob/master/media/outline.png?raw=true)
 
 ## Setup
 
-1. **Resources Path**: Set the `stalker2.resourcesPath` in settings to your unpacked game data folder (must contain the `Stalker2` subfolder). The unpacked game data folder is either derived from the Zone Toolkit or by downloading the unpacked game data from a modding community.
-2. **Indexing**: The extension automatically indexes files on demand.
+1. **Setup Screen**: Upon first installation, the extension will show a setup screen to help you configure your `resourcesPath`. You can always re-run this via `Stalker 2: Show Setup/Intro Screen`.
+2. **Resources Path**: Set the `stalker2.resourcesPath` in settings to your unpacked game data folder (must contain the `Stalker2` subfolder).
+3. **Indexing**: The extension automatically indexes files on demand to keep memory usage low.
 
 ## Configuration
 
@@ -56,6 +63,9 @@ The screenshot shows the outline of a `.cfg` file.
 
 ## Commands
 
+- `Stalker 2: Show Setup/Intro Screen`: Opens the interactive onboarding screen.
+- `Stalker 2: Show Inheritance Structure`: Opens the tree view for the struct under the cursor.
+- `Stalker 2: Show Computed View`: Opens the resolved/merged view for the struct under the cursor.
 - `Stalker 2: Clear Symbol Cache`: Resets the internal symbol and AST cache.
 
 ---
