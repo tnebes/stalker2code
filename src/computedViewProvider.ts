@@ -89,12 +89,37 @@ export class ComputedViewProvider {
           await vscode.window.showTextDocument(doc, {
             selection: new vscode.Range(message.line, 0, message.line, 0),
           });
+        } else if (message.command === "copyToClipboard") {
+          const text = this.structToPlainText(resolved);
+          await vscode.env.clipboard.writeText(text);
+          vscode.window.showInformationMessage(
+            "Configuration copied to clipboard!"
+          );
         }
       });
     } catch (e) {
       outputChannel.appendLine(`Error resolving computed view: ${e}`);
       panel.webview.html = `<h1>Error</h1><p>${e}</p>`;
     }
+  }
+
+  private static structToPlainText(
+    struct: ComputedStruct,
+    indent: number = 0
+  ): string {
+    const padding = "   ".repeat(indent);
+    let text = `${padding}${struct.name} : struct.begin\n`;
+    for (const [key, val] of struct.properties) {
+      if ("properties" in val) {
+        text += this.structToPlainText(val as ComputedStruct, indent + 1);
+      } else {
+        const prop = val as ComputedProperty;
+        if (prop.isRemoved) continue;
+        text += `${padding}   ${prop.key} = ${prop.value}\n`;
+      }
+    }
+    text += `${padding}struct.end\n`;
+    return text;
   }
 
   private static async resolveStructRecursive(
@@ -512,9 +537,28 @@ export class ComputedViewProvider {
           <meta charset="UTF-8">
           <style>
               body { font-family: 'Consolas', 'Monaco', monospace; background-color: var(--vscode-editor-background); color: var(--vscode-editor-foreground); padding: 10px; line-height: 1.2; overflow-x: hidden; }
-              .code-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 400px); gap: 20px; }
+              .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--vscode-editorIndentGuide-background); padding-bottom: 10px; margin-bottom: 15px; }
+              .controls { display: flex; gap: 10px; }
+              button { 
+                  background-color: var(--vscode-button-background); 
+                  color: var(--vscode-button-foreground); 
+                  border: none; 
+                  padding: 4px 12px; 
+                  cursor: pointer; 
+                  font-size: 12px;
+                  border-radius: 2px;
+              }
+              button:hover { background-color: var(--vscode-button-hoverBackground); }
+              .code-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 400px); gap: 20px; transition: all 0.2s; }
+              .code-grid.hide-metadata { grid-template-columns: minmax(0, 1fr); }
+              .code-grid.hide-metadata .source-info { display: none; }
+              
               .struct { border-left: 1px solid var(--vscode-editorIndentGuide-background); padding-left: 20px; grid-column: 1 / span 2; display: grid; grid-template-columns: subgrid; }
+              .hide-metadata .struct { grid-column: 1; }
+              
               .property-row { display: grid; grid-template-columns: subgrid; grid-column: 1 / span 2; align-items: baseline; }
+              .hide-metadata .property-row { grid-column: 1; }
+              
               .property-row:hover { background-color: var(--vscode-list-hoverBackground); }
               .property-content { white-space: pre; grid-column: 1; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
               .key { color: #9CDCFE; }
@@ -535,10 +579,10 @@ export class ComputedViewProvider {
               .removed { text-decoration: line-through; opacity: 0.5; }
               .keyword { color: #C586C0; }
               .comment { color: #6A9955; }
-              h2 { font-size: 1.2em; border-bottom: 1px solid var(--vscode-editorIndentGuide-background); padding-bottom: 5px; margin-top: 0; }
+              h2 { font-size: 1.2em; margin: 0; }
               
               @media (max-width: 700px) {
-                  .code-grid { grid-template-columns: 1fr; }
+                  .code-grid { grid-template-columns: 1fr !important; }
                   .struct { grid-template-columns: 1fr; padding-left: 15px; }
                   .property-row { grid-template-columns: 1fr; }
                   .source-info { 
@@ -547,19 +591,36 @@ export class ComputedViewProvider {
                       padding-left: 10px; 
                       font-size: 0.8em; 
                       margin-bottom: 5px;
+                      display: block !important;
                   }
               }
           </style>
       </head>
       <body>
-          <h2>Computed View: ${rootName}</h2>
-          <div class="code-grid">
+          <div class="header">
+              <h2>Computed View: ${rootName}</h2>
+              <div class="controls">
+                  <button onclick="toggleMetadata()">Toggle Metadata</button>
+                  <button id="copyBtn" onclick="copyToClipboard()">Copy to Clipboard</button>
+              </div>
+          </div>
+          <div id="grid" class="code-grid">
               ${content}
           </div>
           <script>
               const vscode = acquireVsCodeApi();
               function openSource(file, line) {
                   vscode.postMessage({ command: 'openSource', file: file, line: line });
+              }
+              function toggleMetadata() {
+                  document.getElementById('grid').classList.toggle('hide-metadata');
+              }
+              function copyToClipboard() {
+                  vscode.postMessage({ command: 'copyToClipboard' });
+                  const btn = document.getElementById('copyBtn');
+                  const oldText = btn.innerText;
+                  btn.innerText = 'Copied!';
+                  setTimeout(() => { btn.innerText = oldText; }, 2000);
               }
           </script>
       </body>
