@@ -6,7 +6,7 @@
   },
   "displayName": "STALKER 2 Navigator",
   "description": "Navigate, compare and see the source of configuration files for S.T.A.L.K.E.R. 2",
-  "version": "1.4.2",
+  "version": "1.4.5",
   "publisher": "tnebes",
   "icon": "stalker2NavigatorSmall.png",
   "engines": {

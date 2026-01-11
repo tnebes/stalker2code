@@ -12,6 +12,8 @@ import { BlockContext } from "./search/types";
 import { ASTManager } from "./astManager";
 import { BlockNode, PropertyNode, ASTNode } from "./parser/ast";
 
+type SourceType = "base" | "original" | "mod";
+
 interface ComputedProperty {
   key: string;
   value: string;
@@ -20,6 +22,7 @@ interface ComputedProperty {
   inheritanceLevel: number;
   isRemoved?: boolean;
   refkey?: string;
+  sourceType: SourceType;
 }
 
 interface ComputedStruct {
@@ -30,6 +33,7 @@ interface ComputedStruct {
   inheritanceLevel: number;
   isBpatch: boolean;
   refkey?: string;
+  sourceType: SourceType;
 }
 
 export class ComputedViewProvider {
@@ -249,6 +253,7 @@ export class ComputedViewProvider {
       inheritanceLevel: level,
       isBpatch,
       refkey: refkeyMatch ? refkeyMatch[1] : undefined,
+      sourceType: this.getSourceType(uri.fsPath, resourcesPath),
     };
 
     if (parentStruct) {
@@ -270,6 +275,7 @@ export class ComputedViewProvider {
             line: prop.range.start.line,
             inheritanceLevel: level,
             isRemoved,
+            sourceType: this.getSourceType(uri.fsPath, resourcesPath),
           });
         } else if (child.type === "Block") {
           const block = child as BlockNode;
@@ -277,7 +283,12 @@ export class ComputedViewProvider {
 
           if (block.name === "[*]") {
             const arrayKey = this.getNextArrayKey(currentStruct.properties);
-            const newBlock = await this.parseBlockToComputed(block, uri, level);
+            const newBlock = await this.parseBlockToComputed(
+              block,
+              uri,
+              level,
+              resourcesPath
+            );
             newBlock.name = arrayKey;
             currentStruct.properties.set(arrayKey, newBlock);
           } else if (
@@ -290,12 +301,18 @@ export class ComputedViewProvider {
               existing as ComputedStruct,
               block,
               uri,
-              level
+              level,
+              resourcesPath
             );
             currentStruct.properties.set(block.name, merged);
           } else {
             // Overwrite or new block
-            const newBlock = await this.parseBlockToComputed(block, uri, level);
+            const newBlock = await this.parseBlockToComputed(
+              block,
+              uri,
+              level,
+              resourcesPath
+            );
             currentStruct.properties.set(block.name, newBlock);
           }
         }
@@ -320,7 +337,8 @@ export class ComputedViewProvider {
     base: ComputedStruct,
     patch: BlockNode,
     uri: vscode.Uri,
-    level: number
+    level: number,
+    resourcesPath: string
   ): Promise<ComputedStruct> {
     const result: ComputedStruct = {
       ...base,
@@ -339,6 +357,7 @@ export class ComputedViewProvider {
               sourceFile: uri.fsPath,
               line: prop.range.start.line,
               inheritanceLevel: level,
+              sourceType: this.getSourceType(uri.fsPath, resourcesPath),
             });
           } else {
             const isRemoved = prop.value.includes("removenode");
@@ -349,13 +368,19 @@ export class ComputedViewProvider {
               line: prop.range.start.line,
               inheritanceLevel: level,
               isRemoved,
+              sourceType: this.getSourceType(uri.fsPath, resourcesPath),
             });
           }
         } else if (child.type === "Block") {
           const block = child as BlockNode;
           if (block.name === "[*]") {
             const arrayKey = this.getNextArrayKey(result.properties);
-            const newBlock = await this.parseBlockToComputed(block, uri, level);
+            const newBlock = await this.parseBlockToComputed(
+              block,
+              uri,
+              level,
+              resourcesPath
+            );
             newBlock.name = arrayKey;
             result.properties.set(arrayKey, newBlock);
           } else {
@@ -369,14 +394,16 @@ export class ComputedViewProvider {
                 existing as ComputedStruct,
                 block,
                 uri,
-                level
+                level,
+                resourcesPath
               );
               result.properties.set(block.name, merged);
             } else {
               const newBlock = await this.parseBlockToComputed(
                 block,
                 uri,
-                level
+                level,
+                resourcesPath
               );
               result.properties.set(block.name, newBlock);
             }
@@ -390,7 +417,8 @@ export class ComputedViewProvider {
   private static async parseBlockToComputed(
     block: BlockNode,
     uri: vscode.Uri,
-    level: number
+    level: number,
+    resourcesPath: string
   ): Promise<ComputedStruct> {
     const struct: ComputedStruct = {
       name: block.name,
@@ -400,6 +428,7 @@ export class ComputedViewProvider {
       inheritanceLevel: level,
       isBpatch: block.params?.includes("{bpatch}") || false,
       refkey: block.params?.match(REGEX.REFKEY)?.[1],
+      sourceType: this.getSourceType(uri.fsPath, resourcesPath || ""),
     };
 
     if (block.children) {
@@ -416,6 +445,7 @@ export class ComputedViewProvider {
             sourceFile: uri.fsPath,
             line: prop.range.start.line,
             inheritanceLevel: level,
+            sourceType: this.getSourceType(uri.fsPath, resourcesPath || ""),
           });
         } else if (child.type === "Block") {
           const subBlock = child as BlockNode;
@@ -426,7 +456,8 @@ export class ComputedViewProvider {
           const subStruct = await this.parseBlockToComputed(
             subBlock,
             uri,
-            level
+            level,
+            resourcesPath
           );
           subStruct.name = key;
           struct.properties.set(key, subStruct);
@@ -434,6 +465,23 @@ export class ComputedViewProvider {
       }
     }
     return struct;
+  }
+
+  private static getSourceType(
+    filePath: string,
+    resourcesPath: string
+  ): SourceType {
+    if (!resourcesPath) return "mod";
+    const normalizedPath = filePath.toLowerCase().replace(/\\/g, "/");
+    const normalizedResources = resourcesPath.toLowerCase().replace(/\\/g, "/");
+
+    if (normalizedPath.includes(normalizedResources)) {
+      if (isPatchFile(filePath, resourcesPath)) {
+        return "original";
+      }
+      return "base";
+    }
+    return "mod";
   }
 
   private static findNodeAtLine(node: ASTNode, line: number): ASTNode | null {
@@ -575,11 +623,25 @@ export class ComputedViewProvider {
                   overflow: hidden;
                   text-overflow: ellipsis;
               }
+              .source-info.base, .source-info.original { color: #808080; }
+              .source-info.mod { color: #569CD6; }
               .source-info:hover { text-decoration: underline; }
               .removed { text-decoration: line-through; opacity: 0.5; }
               .keyword { color: #C586C0; }
               .comment { color: #6A9955; }
               h2 { font-size: 1.2em; margin: 0; }
+              
+              /* Filtering */
+              .hide-base .property-row.base { display: none; }
+              .hide-original .property-row.original { display: none; }
+              .hide-mod .property-row.mod { display: none; }
+              
+              .filter-controls { display: flex; gap: 5px; align-items: center; font-size: 12px; margin-right: 15px; border-right: 1px solid var(--vscode-editorIndentGuide-background); padding-right: 15px; }
+              .filter-btn { opacity: 0.5; }
+              .filter-btn.active { opacity: 1; border: 1px solid var(--vscode-button-background); }
+              .filter-btn.base { color: #808080; }
+              .filter-btn.original { color: #808080; }
+              .filter-btn.mod { color: #569CD6; }
               
               @media (max-width: 700px) {
                   .code-grid { grid-template-columns: 1fr !important; }
@@ -600,6 +662,12 @@ export class ComputedViewProvider {
           <div class="header">
               <h2>Computed View: ${rootName}</h2>
               <div class="controls">
+                  <div class="filter-controls">
+                      <span>Filter:</span>
+                      <button class="filter-btn active base" onclick="toggleFilter('base', this)">Base</button>
+                      <button class="filter-btn active original" onclick="toggleFilter('original', this)">Original</button>
+                      <button class="filter-btn active mod" onclick="toggleFilter('mod', this)">Mod</button>
+                  </div>
                   <button onclick="toggleMetadata()">Toggle Metadata</button>
                   <button id="copyBtn" onclick="copyToClipboard()">Copy to Clipboard</button>
               </div>
@@ -614,6 +682,10 @@ export class ComputedViewProvider {
               }
               function toggleMetadata() {
                   document.getElementById('grid').classList.toggle('hide-metadata');
+              }
+              function toggleFilter(type, btn) {
+                  document.getElementById('grid').classList.toggle('hide-' + type);
+                  btn.classList.toggle('active');
               }
               function copyToClipboard() {
                   vscode.postMessage({ command: 'copyToClipboard' });
@@ -632,14 +704,15 @@ export class ComputedViewProvider {
       struct.line + 1
     }${struct.refkey ? " (refkey=" + struct.refkey + ")" : ""}`;
     let html = `
-    <div class="property-row">
+    <div class="property-row ${struct.sourceType}">
         <div class="property-content"><span class="key">${
           struct.name
         }</span> : <span class="keyword">struct.begin</span></div>
-        <div class="source-info" onclick="openSource('${struct.sourceFile.replace(
-          /\\/g,
-          "\\\\"
-        )}', ${struct.line})">${sourceLabel}</div>
+        <div class="source-info ${
+          struct.sourceType
+        }" onclick="openSource('${struct.sourceFile.replace(/\\/g, "\\\\")}', ${
+      struct.line
+    })">${sourceLabel}</div>
     </div>`;
 
     html += `<div class="struct">`;
@@ -653,20 +726,22 @@ export class ComputedViewProvider {
           prop.line + 1
         }${prop.refkey ? " (refkey=" + prop.refkey + ")" : ""}`;
         html += `
-        <div class="property-row">
+        <div class="property-row ${prop.sourceType}">
             <div class="property-content"><span class="key">${
               prop.key
             }</span> = <span class="value">${prop.value}</span></div>
-            <div class="source-info" onclick="openSource('${prop.sourceFile.replace(
-              /\\/g,
-              "\\\\"
-            )}', ${prop.line})">${propSource}</div>
+            <div class="source-info ${
+              prop.sourceType
+            }" onclick="openSource('${prop.sourceFile.replace(
+          /\\/g,
+          "\\\\"
+        )}', ${prop.line})">${propSource}</div>
         </div>`;
       }
     }
     html += `</div>`;
     html += `
-    <div class="property-row">
+    <div class="property-row ${struct.sourceType}">
         <div class="property-content"><span class="keyword">struct.end</span></div>
         <div class="source-info"></div>
     </div>`;
